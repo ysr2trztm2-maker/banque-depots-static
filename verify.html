@@ -211,6 +211,7 @@
     }
 
     function fmt(n) { return n.toFixed(2) + '€'; }
+    function fmtDate(d) { if (!d) return ''; const [y,m,j] = d.split('-'); return `${j}-${m}-${y.slice(2)}`; }
 
     function accountLabel(acc) {
       if (acc === 'commerce') return '🛒 Commerce';
@@ -275,14 +276,14 @@
         tr.className = tx.verified ? 'row-verified' : 'row-pending';
         const amountStr = (tx.type === 'retrait' ? '-' : '') + fmt(tx.amount);
         tr.innerHTML = `
-          <td data-label="Date" style="color:#4a5568;white-space:nowrap">${tx.date}</td>
+          <td data-label="Date" style="color:#4a5568;white-space:nowrap">${fmtDate(tx.date)}</td>
           <td data-label="Type"><span class="badge badge-${tx.type}">${tx.type === 'depot' ? 'Dépôt' : 'Retrait'}</span></td>
           <td data-label="Compte">${accountLabel(tx.account)}</td>
           <td data-label="Montant" class="amount-${tx.type} td-amount" style="white-space:nowrap">${amountStr}</td>
           <td data-label="Bordereau" class="col-bordereau" style="color:#718096;font-style:italic">${tx.note || '—'}</td>
           <td data-label="Statut">
             <span class="${tx.verified ? 'status-verified' : 'status-pending'}">${tx.verified ? '✅ Vérifié' : '⏳ En attente'}</span>
-            ${tx.verified && tx.verified_at ? `<div class="verified-date">${tx.verified_at.slice(0,10)}</div>` : ''}
+            ${tx.verified && tx.verified_at ? `<div class="verified-date">${fmtDate(tx.verified_at.slice(0,10))}</div>` : ''}
           </td>
           <td class="td-actions">
             ${!tx.verified
