@@ -62,7 +62,7 @@
       <div class="card card-commerce">
         <div class="card-header"><span class="card-icon">🛒</span><h2>Dépôt Commerce</h2></div>
         <div class="card-form">
-          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-commerce" step="0.01" min="0.01" placeholder="0,00"></div>
+          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-commerce" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
           <div class="form-group"><label>Date</label><input type="date" id="date-commerce"></div>
           <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-commerce" placeholder="ex: 000123"></div>
           <button class="btn btn-commerce" onclick="save('depot','commerce')">Enregistrer le dépôt</button>
@@ -73,7 +73,7 @@
       <div class="card card-tabac">
         <div class="card-header"><span class="card-icon">🚬</span><h2>Dépôt Tabac</h2></div>
         <div class="card-form">
-          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-tabac" step="0.01" min="0.01" placeholder="0,00"></div>
+          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-tabac" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
           <div class="form-group"><label>Date</label><input type="date" id="date-tabac"></div>
           <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-tabac" placeholder="ex: 000123"></div>
           <button class="btn btn-tabac" onclick="save('depot','tabac')">Enregistrer le dépôt</button>
@@ -84,7 +84,7 @@
       <div class="card card-pmu">
         <div class="card-header"><span class="card-icon">🐴</span><h2>Dépôt PMU</h2></div>
         <div class="card-form">
-          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-pmu" step="0.01" min="0.01" placeholder="0,00"></div>
+          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-pmu" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
           <div class="form-group"><label>Date</label><input type="date" id="date-pmu"></div>
           <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-pmu" placeholder="ex: 000123"></div>
           <button class="btn btn-pmu" onclick="save('depot','pmu')">Enregistrer le dépôt</button>
@@ -95,7 +95,7 @@
       <div class="card card-retrait">
         <div class="card-header"><span class="card-icon">💵</span><h2>Retrait (Monnaie)</h2></div>
         <div class="card-form">
-          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-retrait" step="0.01" min="0.01" placeholder="0,00"></div>
+          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-retrait" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
           <div class="form-group"><label>Date</label><input type="date" id="date-retrait"></div>
           <div class="form-group"><label>Motif (optionnel)</label><input type="text" id="note-retrait" placeholder="ex: monnaie caisse"></div>
           <button class="btn btn-retrait" onclick="save('retrait',null)">Enregistrer le retrait</button>
