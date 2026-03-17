@@ -11,37 +11,42 @@
     .nav-title { font-size: 1.1rem; font-weight: 700; }
     .nav-link { color: #90cdf4; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
     .nav-link:hover { color: white; }
-    .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
-    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
-    .subtitle { color: #718096; margin-bottom: 28px; font-size: 0.95rem; }
+    .container { max-width: 560px; margin: 0 auto; padding: 24px 16px 48px; }
     .alert { padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-weight: 500; display: none; }
     .alert.show { display: block; }
     .alert-success { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
     .alert-error { background: #fed7d7; color: #c53030; border: 1px solid #feb2b2; }
-    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
-    .card { background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; transition: box-shadow 0.2s; }
-    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.12); }
-    .card-header { padding: 18px 20px 14px; display: flex; align-items: center; gap: 10px; }
-    .card-icon { font-size: 1.6rem; }
-    .card-header h2 { font-size: 1.1rem; font-weight: 700; }
-    .card-commerce .card-header { background: #ebf8ff; color: #2b6cb0; border-bottom: 3px solid #3182ce; }
-    .card-tabac    .card-header { background: #fff5f5; color: #c53030; border-bottom: 3px solid #e53e3e; }
-    .card-pmu      .card-header { background: #f0fff4; color: #276749; border-bottom: 3px solid #38a169; }
-    .card-retrait  .card-header { background: #fffaf0; color: #7b341e; border-bottom: 3px solid #dd6b20; }
-    .card-form { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 14px; }
+
+    /* Onglets */
+    .tabs { display: grid; grid-template-columns: repeat(4, 1fr); border-radius: 12px 12px 0 0; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .tab { padding: 14px 4px 12px; background: #e2e8f0; color: #4a5568; border: none; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 0.72rem; font-weight: 600; transition: background 0.15s, color 0.15s; }
+    .tab .tab-icon { font-size: 1.4rem; }
+    .tab:not(:last-child) { border-right: 1px solid #cbd5e0; }
+    .tab.active-commerce { background: #3182ce; color: white; }
+    .tab.active-tabac    { background: #e53e3e; color: white; }
+    .tab.active-pmu      { background: #38a169; color: white; }
+    .tab.active-retrait  { background: #dd6b20; color: white; }
+
+    /* Panneau */
+    .panel { background: white; border-radius: 0 0 12px 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); padding: 24px 20px 28px; display: none; flex-direction: column; gap: 16px; }
+    .panel.active { display: flex; }
+    .panel-title { font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 8px; padding-bottom: 14px; border-bottom: 2px solid #e2e8f0; }
+    .panel-commerce .panel-title { color: #2b6cb0; border-color: #3182ce; }
+    .panel-tabac    .panel-title { color: #c53030; border-color: #e53e3e; }
+    .panel-pmu      .panel-title { color: #276749; border-color: #38a169; }
+    .panel-retrait  .panel-title { color: #7b341e; border-color: #dd6b20; }
     .form-group { display: flex; flex-direction: column; gap: 5px; }
     .form-group label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: #718096; }
     input[type=number], input[type=date], input[type=text] { border: 1.5px solid #e2e8f0; border-radius: 7px; padding: 9px 12px; font-size: 1rem; width: 100%; transition: border-color 0.2s; }
-    input[type=number] { font-size: 1.3rem; font-weight: 700; }
+    input[type=number] { font-size: 1.5rem; font-weight: 700; }
     input:focus { outline: none; border-color: #4299e1; box-shadow: 0 0 0 3px rgba(66,153,225,0.15); }
-    .btn { padding: 10px 16px; border: none; border-radius: 7px; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: opacity 0.15s; width: 100%; }
+    .btn { padding: 13px 16px; border: none; border-radius: 7px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: opacity 0.15s; width: 100%; margin-top: 4px; }
     .btn:hover { opacity: 0.88; }
     .btn:disabled { opacity: 0.5; cursor: not-allowed; }
     .btn-commerce { background: #3182ce; color: white; }
     .btn-tabac    { background: #e53e3e; color: white; }
     .btn-pmu      { background: #38a169; color: white; }
     .btn-retrait  { background: #dd6b20; color: white; }
-    @media (max-width: 600px) { .cards-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -51,57 +56,58 @@
   </nav>
 
   <div class="container">
-    <h1>Enregistrer une opération</h1>
-    <p class="subtitle">Sélectionnez le type d'opération et saisissez le montant</p>
-
     <div id="alert" class="alert"></div>
 
-    <div class="cards-grid">
+    <!-- Onglets -->
+    <div class="tabs">
+      <button class="tab" id="tab-commerce" onclick="switchTab('commerce')">
+        <span class="tab-icon">🛒</span>Commerce
+      </button>
+      <button class="tab" id="tab-tabac" onclick="switchTab('tabac')">
+        <span class="tab-icon">🚬</span>Tabac
+      </button>
+      <button class="tab" id="tab-pmu" onclick="switchTab('pmu')">
+        <span class="tab-icon">🐴</span>PMU
+      </button>
+      <button class="tab" id="tab-retrait" onclick="switchTab('retrait')">
+        <span class="tab-icon">💵</span>Retrait
+      </button>
+    </div>
 
-      <!-- Commerce -->
-      <div class="card card-commerce">
-        <div class="card-header"><span class="card-icon">🛒</span><h2>Dépôt Commerce</h2></div>
-        <div class="card-form">
-          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-commerce" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
-          <div class="form-group"><label>Date</label><input type="date" id="date-commerce"></div>
-          <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-commerce" placeholder="ex: 000123"></div>
-          <button class="btn btn-commerce" onclick="save('depot','commerce')">Enregistrer le dépôt</button>
-        </div>
-      </div>
+    <!-- Commerce -->
+    <div class="panel panel-commerce" id="panel-commerce">
+      <div class="panel-title"><span>🛒</span> Dépôt Commerce</div>
+      <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-commerce" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="date-commerce"></div>
+      <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-commerce" placeholder="ex: 000123"></div>
+      <button class="btn btn-commerce" onclick="save('depot','commerce')">Enregistrer le dépôt</button>
+    </div>
 
-      <!-- Tabac -->
-      <div class="card card-tabac">
-        <div class="card-header"><span class="card-icon">🚬</span><h2>Dépôt Tabac</h2></div>
-        <div class="card-form">
-          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-tabac" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
-          <div class="form-group"><label>Date</label><input type="date" id="date-tabac"></div>
-          <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-tabac" placeholder="ex: 000123"></div>
-          <button class="btn btn-tabac" onclick="save('depot','tabac')">Enregistrer le dépôt</button>
-        </div>
-      </div>
+    <!-- Tabac -->
+    <div class="panel panel-tabac" id="panel-tabac">
+      <div class="panel-title"><span>🚬</span> Dépôt Tabac</div>
+      <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-tabac" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="date-tabac"></div>
+      <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-tabac" placeholder="ex: 000123"></div>
+      <button class="btn btn-tabac" onclick="save('depot','tabac')">Enregistrer le dépôt</button>
+    </div>
 
-      <!-- PMU -->
-      <div class="card card-pmu">
-        <div class="card-header"><span class="card-icon">🐴</span><h2>Dépôt PMU</h2></div>
-        <div class="card-form">
-          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-pmu" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
-          <div class="form-group"><label>Date</label><input type="date" id="date-pmu"></div>
-          <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-pmu" placeholder="ex: 000123"></div>
-          <button class="btn btn-pmu" onclick="save('depot','pmu')">Enregistrer le dépôt</button>
-        </div>
-      </div>
+    <!-- PMU -->
+    <div class="panel panel-pmu" id="panel-pmu">
+      <div class="panel-title"><span>🐴</span> Dépôt PMU</div>
+      <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-pmu" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="date-pmu"></div>
+      <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-pmu" placeholder="ex: 000123"></div>
+      <button class="btn btn-pmu" onclick="save('depot','pmu')">Enregistrer le dépôt</button>
+    </div>
 
-      <!-- Retrait -->
-      <div class="card card-retrait">
-        <div class="card-header"><span class="card-icon">💵</span><h2>Retrait (Monnaie)</h2></div>
-        <div class="card-form">
-          <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-retrait" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
-          <div class="form-group"><label>Date</label><input type="date" id="date-retrait"></div>
-          <div class="form-group"><label>Motif (optionnel)</label><input type="text" id="note-retrait" placeholder="ex: monnaie caisse"></div>
-          <button class="btn btn-retrait" onclick="save('retrait',null)">Enregistrer le retrait</button>
-        </div>
-      </div>
-
+    <!-- Retrait -->
+    <div class="panel panel-retrait" id="panel-retrait">
+      <div class="panel-title"><span>💵</span> Retrait (Monnaie)</div>
+      <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-retrait" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
+      <div class="form-group"><label>Date</label><input type="date" id="date-retrait"></div>
+      <div class="form-group"><label>Motif (optionnel)</label><input type="text" id="note-retrait" placeholder="ex: monnaie caisse"></div>
+      <button class="btn btn-retrait" onclick="save('retrait',null)">Enregistrer le retrait</button>
     </div>
   </div>
 
@@ -112,15 +118,23 @@
     function getToken() { return localStorage.getItem('banque_token') || _a.join(''); }
     function apiUrl() { return `https://api.github.com/gists/${GIST_ID}`; }
 
+    const today = new Date().toISOString().slice(0,10);
+
     window.addEventListener('DOMContentLoaded', () => {
-      const today = new Date().toISOString().slice(0,10);
       ['commerce','tabac','pmu','retrait'].forEach(k => {
         document.getElementById('date-' + k).value = today;
       });
+      switchTab('commerce');
     });
 
-    // Init dates à aujourd'hui
-    const today = new Date().toISOString().slice(0,10);
+    function switchTab(key) {
+      ['commerce','tabac','pmu','retrait'].forEach(k => {
+        document.getElementById('tab-' + k).className = 'tab';
+        document.getElementById('panel-' + k).classList.remove('active');
+      });
+      document.getElementById('tab-' + key).className = 'tab active-' + key;
+      document.getElementById('panel-' + key).classList.add('active');
+    }
 
     function showAlert(msg, type) {
       const el = document.getElementById('alert');
