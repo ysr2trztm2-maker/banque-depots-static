@@ -29,7 +29,7 @@
     .filters-form { display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; }
     .filter-group { display: flex; flex-direction: column; gap: 5px; }
     .filter-group label { font-size: 0.75rem; font-weight: 600; text-transform: uppercase; color: #718096; }
-    select, input[type=date] { border: 1.5px solid #e2e8f0; border-radius: 7px; padding: 7px 10px; font-size: 0.9rem; min-width: 140px; }
+    select, input[type=date] { border: 1.5px solid #e2e8f0; border-radius: 7px; padding: 7px 10px; font-size: 0.9rem; min-width: 140px; width: 100%; }
     .btn { padding: 8px 16px; border: none; border-radius: 7px; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
     .btn:hover { opacity: 0.88; }
     .btn-filter { background: #4299e1; color: white; }
@@ -57,7 +57,11 @@
     .td-actions { white-space: nowrap; display: flex; gap: 5px; align-items: center; }
     .empty-state { text-align: center; padding: 48px; color: #a0aec0; }
     #loading { text-align: center; padding: 40px; color: #718096; }
-    @media (max-width: 600px) { .totals-grid { grid-template-columns: 1fr 1fr; } .filters-form { flex-direction: column; } }
+    @media (max-width: 600px) {
+      .totals-grid { grid-template-columns: 1fr 1fr; }
+      .filters-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+      .filters-form .btn { width: 100%; }
+    }
   </style>
 </head>
 <body>
