@@ -99,7 +99,7 @@
         <div class="filter-group"><label>Du</label><input type="date" id="f-from"></div>
         <div class="filter-group"><label>Au</label><input type="date" id="f-to"></div>
         <button class="btn btn-filter" onclick="render()">Filtrer</button>
-        <button class="btn btn-reset" onclick="resetFilters()">Aujourd'hui</button>
+        <button class="btn btn-reset" onclick="resetFilters()">Réinitialiser</button>
       </div>
     </div>
 
@@ -234,19 +234,15 @@
       render();
     }
 
-    const today = new Date().toISOString().slice(0,10);
-
     function resetFilters() {
       document.getElementById('f-account').value = '';
       document.getElementById('f-status').value = '';
-      document.getElementById('f-from').value = today;
-      document.getElementById('f-to').value = today;
+      document.getElementById('f-from').value = '';
+      document.getElementById('f-to').value = '';
       render();
     }
 
     // Init
-    document.getElementById('f-from').value = today;
-    document.getElementById('f-to').value = today;
     loadData().then(data => {
       allData = data;
       document.getElementById('loading').style.display = 'none';
