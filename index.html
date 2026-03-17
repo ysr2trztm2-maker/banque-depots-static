@@ -106,15 +106,42 @@
   </div>
 
   <script>
-    const GIST_TOKEN = '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';
-    const GIST_ID    = 'b6d25e8ac17ba20189379f93c4c89cad';
-    const API_URL    = `https://api.github.com/gists/${GIST_ID}`;
+    const GIST_ID = 'b6d25e8ac17ba20189379f93c4c89cad';
+
+    function getToken() { return localStorage.getItem('banque_token'); }
+    function apiUrl() { return `https://api.github.com/gists/${GIST_ID}`; }
+
+    // Si pas de token → affiche la config
+    window.addEventListener('DOMContentLoaded', () => {
+      if (!getToken()) showConfig();
+      const today = new Date().toISOString().slice(0,10);
+      ['commerce','tabac','pmu','retrait'].forEach(k => {
+        document.getElementById('date-' + k).value = today;
+      });
+    });
+
+    function showConfig() {
+      const div = document.createElement('div');
+      div.id = 'config-overlay';
+      div.style = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center';
+      div.innerHTML = `<div style="background:white;border-radius:12px;padding:32px;max-width:400px;width:90%;text-align:center">
+        <h2 style="margin-bottom:12px">⚙️ Configuration</h2>
+        <p style="color:#718096;margin-bottom:20px;font-size:0.9rem">Saisissez le token GitHub une seule fois</p>
+        <input id="token-input" type="password" placeholder="ghp_..." style="width:100%;border:1.5px solid #e2e8f0;border-radius:7px;padding:10px;font-size:0.9rem;margin-bottom:16px">
+        <button onclick="saveToken()" style="width:100%;background:#3182ce;color:white;border:none;border-radius:7px;padding:11px;font-size:1rem;font-weight:700;cursor:pointer">Enregistrer</button>
+      </div>`;
+      document.body.appendChild(div);
+    }
+
+    function saveToken() {
+      const t = document.getElementById('token-input').value.trim();
+      if (!t) return;
+      localStorage.setItem('banque_token', t);
+      document.getElementById('config-overlay').remove();
+    }
 
     // Init dates à aujourd'hui
     const today = new Date().toISOString().slice(0,10);
-    ['commerce','tabac','pmu','retrait'].forEach(k => {
-      document.getElementById('date-' + k).value = today;
-    });
 
     function showAlert(msg, type) {
       const el = document.getElementById('alert');
@@ -124,15 +151,15 @@
     }
 
     async function loadData() {
-      const r = await fetch(API_URL, { headers: { 'Authorization': 'token ' + GIST_TOKEN } });
+      const r = await fetch(apiUrl(), { headers: { 'Authorization': 'token ' + getToken() } });
       const g = await r.json();
       return JSON.parse(g.files['banque_data.json'].content);
     }
 
     async function saveData(data) {
-      await fetch(API_URL, {
+      await fetch(apiUrl(), {
         method: 'PATCH',
-        headers: { 'Authorization': 'token ' + GIST_TOKEN, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': 'token ' + getToken(), 'Content-Type': 'application/json' },
         body: JSON.stringify({ files: { 'banque_data.json': { content: JSON.stringify(data) } } })
       });
     }
