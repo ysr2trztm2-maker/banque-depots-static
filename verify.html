@@ -67,7 +67,9 @@
       .totals-grid { grid-template-columns: 1fr 1fr; }
       .filters-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
       .filters-form .btn { width: 100%; }
-      select, input[type=date] { min-width: 0; width: 100%; }
+      select, input[type=date] { min-width: 0; width: 100%; box-sizing: border-box; }
+      .filter-group { min-width: 0; }
+      input[type=date] { background: white; border: 1.5px solid #cbd5e0; border-radius: 7px; display: block; }
 
       /* Tableau → cartes 2 colonnes */
       .table-wrapper { background: transparent; box-shadow: none; border-radius: 0; overflow: visible; }
