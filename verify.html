@@ -66,10 +66,28 @@
       .totals-grid { grid-template-columns: 1fr 1fr; }
       .filters-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
       .filters-form .btn { width: 100%; }
-      table { font-size: 0.75rem; }
-      th, td { padding: 8px 5px; }
-      .amount-depot, .amount-retrait { white-space: nowrap; font-size: 0.78rem; }
-      .col-bordereau { display: none; }
+
+      /* Tableau → cartes */
+      .table-wrapper { background: transparent; box-shadow: none; border-radius: 0; overflow: visible; }
+      table, thead, tbody, th, td, tr { display: block; }
+      thead tr { position: absolute; top: -9999px; left: -9999px; }
+      tbody tr {
+        background: white; border-radius: 10px; margin-bottom: 10px;
+        padding: 12px 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+        border-left: 4px solid #e2e8f0;
+      }
+      tr.row-verified { background: #f0fff4; border-left-color: #38a169; }
+      tr.row-pending  { border-left-color: #e2e8f0; }
+      td { padding: 3px 0; border: none; font-size: 0.88rem; }
+      td[data-label]::before {
+        content: attr(data-label) " ";
+        font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+        color: #a0aec0; letter-spacing: 0.4px;
+      }
+      .td-row-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+      .td-amount { font-size: 1.1rem; }
+      .td-actions { padding-top: 8px; display: flex; gap: 8px; }
+      .btn-verify, .btn-unverify, .btn-delete { padding: 7px 14px; font-size: 0.82rem; }
     }
   </style>
 </head>
@@ -237,13 +255,14 @@
       txs.forEach(tx => {
         const tr = document.createElement('tr');
         tr.className = tx.verified ? 'row-verified' : 'row-pending';
+        const amountStr = (tx.type === 'retrait' ? '-' : '') + fmt(tx.amount);
         tr.innerHTML = `
-          <td style="color:#4a5568;font-size:0.85rem;white-space:nowrap">${tx.date}</td>
-          <td><span class="badge badge-${tx.type}">${tx.type === 'depot' ? 'Dépôt' : 'Retrait'}</span></td>
-          <td>${accountLabel(tx.account)}</td>
-          <td class="amount-${tx.type}" style="white-space:nowrap">${tx.type === 'retrait' ? '-' : ''}${fmt(tx.amount)}</td>
-          <td class="col-bordereau" style="color:#718096;font-style:italic">${tx.note || '—'}</td>
-          <td>
+          <td data-label="Date" style="color:#4a5568;white-space:nowrap">${tx.date}</td>
+          <td data-label="Type"><span class="badge badge-${tx.type}">${tx.type === 'depot' ? 'Dépôt' : 'Retrait'}</span></td>
+          <td data-label="Compte">${accountLabel(tx.account)}</td>
+          <td data-label="Montant" class="amount-${tx.type} td-amount" style="white-space:nowrap">${amountStr}</td>
+          <td data-label="Bordereau" class="col-bordereau" style="color:#718096;font-style:italic">${tx.note || '—'}</td>
+          <td data-label="Statut">
             <span class="${tx.verified ? 'status-verified' : 'status-pending'}">${tx.verified ? '✅ Vérifié' : '⏳ En attente'}</span>
             ${tx.verified && tx.verified_at ? `<div class="verified-date">${tx.verified_at.slice(0,10)}</div>` : ''}
           </td>
