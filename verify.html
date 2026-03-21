@@ -39,8 +39,10 @@
     .btn:hover { opacity: 0.88; }
     .btn-filter { background: #4299e1; color: white; }
     .btn-reset  { background: #e2e8f0; color: #4a5568; text-decoration: none; display: inline-block; }
-    .btn-verify   { background: #38a169; color: white; padding: 5px 11px; font-size: 0.8rem; }
-    .btn-unverify { background: #718096; color: white; padding: 5px 9px; font-size: 0.8rem; }
+    .btn-verify   { background: none; border: none; color: #c53030; font-weight: 700; font-size: 0.85rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+    .btn-verify:hover { background: #fff5f5; }
+    .btn-unverify { background: none; border: none; color: #276749; font-weight: 700; font-size: 0.85rem; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+    .btn-unverify:hover { background: #f0fff4; }
     .btn-delete   { background: #fed7d7; color: #c53030; padding: 5px 9px; font-size: 0.8rem; }
 
     /* Tableau */
@@ -105,7 +107,8 @@
       td.td-actions { grid-column: 1 / -1; grid-row: 4; padding-top: 8px; display: flex; gap: 8px; }
       .col-bordereau { display: block; }
       .td-amount { font-size: 1.05rem; }
-      .btn-verify, .btn-unverify, .btn-delete { padding: 7px 14px; font-size: 0.82rem; }
+      .btn-verify, .btn-unverify { font-size: 0.88rem; padding: 6px 10px; }
+      .btn-delete { padding: 7px 14px; font-size: 0.82rem; }
     }
   </style>
 </head>
@@ -287,8 +290,8 @@
           </td>
           <td class="td-actions">
             ${!tx.verified
-              ? `<button class="btn btn-verify" onclick="verifyTx('${tx.id}', true)">✅ Vérifier</button>`
-              : `<button class="btn btn-unverify" onclick="verifyTx('${tx.id}', false)">↩ Annuler</button>`
+              ? `<button class="btn btn-verify" onclick="verifyTx('${tx.id}', true)">à vérifier</button>`
+              : `<button class="btn btn-unverify" onclick="verifyTx('${tx.id}', false)">✔ vérifié</button>`
             }
             <button class="btn btn-delete" onclick="deleteTx('${tx.id}')">🗑</button>
           </td>`;
