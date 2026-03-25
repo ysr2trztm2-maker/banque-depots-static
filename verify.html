@@ -16,18 +16,18 @@
     .nav-title { font-size: 1.1rem; font-weight: 700; }
     .nav-link { color: #90cdf4; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
     .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
-    .alerts-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    .alert { padding: 12px 18px; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
-    .alert-success  { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
-    .alert-warning  { background: #fefcbf; color: #744210; border: 1px solid #f6e05e; }
-    .alert-facture  { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+    .alerts-card { background: white; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
+    .alerts-card-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #718096; margin-bottom: 12px; }
+    .alerts-grid { display: flex; flex-direction: column; gap: 8px; }
+    .alert { padding: 10px 14px; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+    .alert-facture     { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
     .alert-prelevement { background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; }
-    .alert-verif    { background: #fefcbf; color: #744210; border: 1px solid #f6e05e; }
-    .alert-ok       { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
-    .alert .alert-count { font-size: 1.3rem; font-weight: 800; min-width: 28px; text-align: center; }
+    .alert-verif       { background: #fefcbf; color: #744210; border: 1px solid #f6e05e; }
+    .alert-ok          { background: #f0fff4; color: #276749; border: 1px solid #9ae6b4; }
+    .alert .alert-count { font-size: 1.2rem; min-width: 24px; text-align: center; }
     .alert .alert-text  { display: flex; flex-direction: column; }
-    .alert .alert-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; opacity: 0.75; }
-    .alert .alert-msg   { font-size: 0.92rem; }
+    .alert .alert-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; opacity: 0.7; }
+    .alert .alert-msg   { font-size: 0.88rem; }
 
     /* Totaux */
     .totals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
@@ -135,10 +135,13 @@
       <div class="total-card total-retrait"><div class="total-label">💵 Retraits</div><div class="total-amount" id="tot-retrait">—</div><div class="total-sublabel">total retiré</div></div>
     </div>
 
-    <div class="alerts-grid">
-      <div id="alert-facture"    class="alert" style="display:none"></div>
-      <div id="alert-prelevement" class="alert" style="display:none"></div>
-      <div id="alert-verif"     class="alert" style="display:none"></div>
+    <div class="alerts-card">
+      <div class="alerts-card-title">⚠️ Alertes</div>
+      <div class="alerts-grid">
+        <div id="alert-facture"     class="alert" style="display:none"></div>
+        <div id="alert-prelevement" class="alert" style="display:none"></div>
+        <div id="alert-verif"       class="alert" style="display:none"></div>
+      </div>
     </div>
 
     <div class="filters-card">
