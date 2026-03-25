@@ -16,9 +16,18 @@
     .nav-title { font-size: 1.1rem; font-weight: 700; }
     .nav-link { color: #90cdf4; text-decoration: none; font-size: 0.9rem; font-weight: 500; }
     .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px 48px; }
-    .alert { padding: 12px 18px; border-radius: 8px; margin-bottom: 20px; font-weight: 500; }
-    .alert-success { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
-    .alert-warning { background: #fefcbf; color: #744210; border: 1px solid #f6e05e; }
+    .alerts-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+    .alert { padding: 12px 18px; border-radius: 8px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+    .alert-success  { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
+    .alert-warning  { background: #fefcbf; color: #744210; border: 1px solid #f6e05e; }
+    .alert-facture  { background: #fff5f5; color: #c53030; border: 1px solid #feb2b2; }
+    .alert-prelevement { background: #fffaf0; color: #c05621; border: 1px solid #fbd38d; }
+    .alert-verif    { background: #fefcbf; color: #744210; border: 1px solid #f6e05e; }
+    .alert-ok       { background: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
+    .alert .alert-count { font-size: 1.3rem; font-weight: 800; min-width: 28px; text-align: center; }
+    .alert .alert-text  { display: flex; flex-direction: column; }
+    .alert .alert-label { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; opacity: 0.75; }
+    .alert .alert-msg   { font-size: 0.92rem; }
 
     /* Totaux */
     .totals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
@@ -126,7 +135,11 @@
       <div class="total-card total-retrait"><div class="total-label">💵 Retraits</div><div class="total-amount" id="tot-retrait">—</div><div class="total-sublabel">total retiré</div></div>
     </div>
 
-    <div id="pending-alert" class="alert" style="display:none"></div>
+    <div class="alerts-grid">
+      <div id="alert-facture"    class="alert" style="display:none"></div>
+      <div id="alert-prelevement" class="alert" style="display:none"></div>
+      <div id="alert-verif"     class="alert" style="display:none"></div>
+    </div>
 
     <div class="filters-card">
       <div class="filters-form">
@@ -256,18 +269,29 @@
       const totalR = base.filter(t => t.type === 'retrait').reduce((s,t) => s + t.amount, 0);
       document.getElementById('tot-retrait').textContent = fmt(totalR);
 
-      // Alerte en attente
-      const pending = allData.transactions.filter(t => !t.verified).length;
-      const pa = document.getElementById('pending-alert');
-      if (pending > 0) {
-        pa.textContent = `⚠️ ${pending} opération(s) en attente de vérification`;
-        pa.className = 'alert alert-warning';
-        pa.style.display = 'block';
-      } else {
-        pa.textContent = '✅ Toutes les opérations sont vérifiées';
-        pa.className = 'alert alert-success';
-        pa.style.display = 'block';
+      // Alertes séparées
+      const pendingFacture    = allData.transactions.filter(t => t.type === 'depot'   && !t.verified).length;
+      const pendingPrelevement = allData.transactions.filter(t => t.type === 'retrait' && !t.verified).length;
+      const pendingVerif      = pendingFacture + pendingPrelevement;
+
+      function setAlert(id, cssClass, iconOk, iconWarn, label, count, msgWarn, msgOk) {
+        const el = document.getElementById(id);
+        if (count > 0) {
+          el.className = 'alert ' + cssClass;
+          el.innerHTML = `<span class="alert-count">${iconWarn}</span><span class="alert-text"><span class="alert-label">${label}</span><span class="alert-msg">${count} ${msgWarn}</span></span>`;
+        } else {
+          el.className = 'alert alert-ok';
+          el.innerHTML = `<span class="alert-count">${iconOk}</span><span class="alert-text"><span class="alert-label">${label}</span><span class="alert-msg">${msgOk}</span></span>`;
+        }
+        el.style.display = 'flex';
       }
+
+      setAlert('alert-facture',     'alert-facture',     '✅', '📄', 'Réception de facture',
+               pendingFacture,    'dépôt(s) non encore réceptionné(s)', 'Toutes les factures sont réceptionnées');
+      setAlert('alert-prelevement', 'alert-prelevement', '✅', '💳', 'Prélèvement',
+               pendingPrelevement, 'retrait(s) en attente de confirmation', 'Tous les prélèvements sont confirmés');
+      setAlert('alert-verif',       'alert-verif',       '✅', '🔍', 'Vérification bancaire',
+               pendingVerif,      'opération(s) à vérifier sur le relevé', 'Toutes les opérations sont vérifiées');
 
       // Tableau
       const tbody = document.getElementById('tbody');
