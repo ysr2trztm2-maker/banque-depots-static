@@ -151,7 +151,14 @@
     async function loadData() {
       const r = await fetch(apiUrl(), { headers: { 'Authorization': 'token ' + getToken() } });
       const g = await r.json();
-      return JSON.parse(g.files['banque_data.json'].content);
+      const content = g.files['banque_data.json'].content;
+      if (!content || !content.trim()) {
+        const empty = { transactions: [] };
+        await saveData(empty);
+        return empty;
+      }
+      try { return JSON.parse(content); }
+      catch(e) { return { transactions: [] }; }
     }
 
     async function saveData(data) {
