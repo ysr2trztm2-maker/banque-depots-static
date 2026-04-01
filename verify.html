@@ -74,6 +74,9 @@
     .edit-modal-btns .btn { flex: 1; padding: 11px; font-size: 0.9rem; }
     .btn-confirm-edit { background: #805ad5; color: white; }
     .btn-cancel-edit  { background: #e2e8f0; color: #4a5568; }
+    .toggle-group { display: grid; grid-template-columns: 1fr 1fr; border-radius: 8px; overflow: hidden; border: 2px solid #805ad5; }
+    .toggle-btn { padding: 10px 8px; border: none; cursor: pointer; font-size: 0.88rem; font-weight: 700; background: white; transition: background 0.15s, color 0.15s; }
+    .toggle-btn.active { background: #805ad5; color: white; }
 
     /* Modale Écart */
     .ecart-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.55); z-index: 200; display: flex; align-items: center; justify-content: center; }
@@ -399,11 +402,6 @@
                          <button class="btn btn-repending" onclick="setStatus('${tx.id}','pending')">↩ Attente</button>`;
         }
         actionsHtml += `<button class="btn btn-edit" onclick="showEditModal('${tx.id}')">✏️</button>`;
-        if (tx.account === 'commerce') {
-          const nextSubtype = (tx.subtype === 'monnaie') ? 'especes' : 'monnaie';
-          const label = (tx.subtype === 'monnaie') ? '💵 → Espèces' : '🪙 → Monnaie';
-          actionsHtml += `<button class="btn btn-subtype" onclick="toggleSubtype('${tx.id}','${nextSubtype}')">${label}</button>`;
-        }
 
         tr.innerHTML = `
           <td data-label="Date" style="color:#4a5568;white-space:nowrap">${fmtDate(tx.date)}</td>
@@ -423,12 +421,21 @@
     function showEditModal(id) {
       const tx = allData.transactions.find(t => t.id === id);
       if (!tx) return;
+      const subtypeField = tx.account === 'commerce' ? `
+        <div class="edit-field">
+          <label>Type de versement</label>
+          <div class="toggle-group" style="border-color:#805ad5">
+            <button id="edit-toggle-especes" class="toggle-btn${(tx.subtype !== 'monnaie') ? ' active' : ''}" style="color:#553c9a" onclick="editSetSubtype('especes')" type="button">💵 Espèces</button>
+            <button id="edit-toggle-monnaie" class="toggle-btn${tx.subtype === 'monnaie' ? ' active' : ''}" style="color:#553c9a" onclick="editSetSubtype('monnaie')" type="button">🪙 Monnaie</button>
+          </div>
+        </div>` : '';
       const overlay = document.createElement('div');
       overlay.className = 'ecart-overlay';
       overlay.id = 'edit-overlay';
       overlay.innerHTML = `
         <div class="edit-modal">
           <h3>✏️ Modifier l'opération</h3>
+          ${subtypeField}
           <div class="edit-field"><label>Montant (€)</label><input type="number" id="edit-amount" step="0.01" min="0.01" inputmode="decimal" value="${tx.amount}"></div>
           <div class="edit-field"><label>Date</label><input type="date" id="edit-date" value="${tx.date}"></div>
           <div class="edit-field"><label>N° de bordereau</label><input type="text" id="edit-note" inputmode="numeric" value="${tx.note || ''}"></div>
@@ -441,6 +448,11 @@
       document.getElementById('edit-amount').focus();
     }
 
+    function editSetSubtype(type) {
+      document.getElementById('edit-toggle-especes').classList.toggle('active', type === 'especes');
+      document.getElementById('edit-toggle-monnaie').classList.toggle('active', type === 'monnaie');
+    }
+
     async function confirmEdit(id) {
       const tx = allData.transactions.find(t => t.id === id);
       if (!tx) return;
@@ -451,6 +463,9 @@
       tx.amount = amount;
       tx.date   = date;
       tx.note   = note;
+      if (tx.account === 'commerce') {
+        tx.subtype = document.getElementById('edit-toggle-monnaie').classList.contains('active') ? 'monnaie' : 'especes';
+      }
       document.getElementById('edit-overlay').remove();
       await saveData(allData);
       render();
