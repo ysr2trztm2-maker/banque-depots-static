@@ -59,6 +59,21 @@
     .btn-delete   { background: #fed7d7; color: #c53030; padding: 5px 9px; font-size: 0.8rem; }
     .btn-subtype  { background: #e9f5ff; border: 2px solid #63b3ed; color: #2b6cb0; font-weight: 700; font-size: 0.82rem; padding: 5px 11px; border-radius: 6px; }
     .btn-subtype:hover { background: #bee3f8; }
+    .btn-edit     { background: #faf5ff; border: 2px solid #805ad5; color: #553c9a; font-weight: 700; font-size: 0.82rem; padding: 5px 11px; border-radius: 6px; }
+    .btn-edit:hover { background: #e9d8fd; }
+
+    /* Modale Édition */
+    .edit-modal { background: white; border-radius: 14px; padding: 28px 24px; max-width: 380px; width: 92%; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+    .edit-modal h3 { font-size: 1.05rem; margin-bottom: 18px; color: #2d3748; }
+    .edit-modal .edit-field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+    .edit-modal label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #718096; }
+    .edit-modal input { border: 1.5px solid #e2e8f0; border-radius: 7px; padding: 9px 12px; font-size: 1rem; width: 100%; }
+    .edit-modal input[type=number] { font-size: 1.4rem; font-weight: 700; }
+    .edit-modal input:focus { outline: none; border-color: #805ad5; box-shadow: 0 0 0 3px rgba(128,90,213,0.15); }
+    .edit-modal-btns { display: flex; gap: 10px; margin-top: 18px; }
+    .edit-modal-btns .btn { flex: 1; padding: 11px; font-size: 0.9rem; }
+    .btn-confirm-edit { background: #805ad5; color: white; }
+    .btn-cancel-edit  { background: #e2e8f0; color: #4a5568; }
 
     /* Modale Écart */
     .ecart-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.55); z-index: 200; display: flex; align-items: center; justify-content: center; }
@@ -383,6 +398,7 @@
                          <button class="btn btn-ecart" onclick="showEcartModal('${tx.id}')">✏️ Modifier</button>
                          <button class="btn btn-repending" onclick="setStatus('${tx.id}','pending')">↩ Attente</button>`;
         }
+        actionsHtml += `<button class="btn btn-edit" onclick="showEditModal('${tx.id}')">✏️</button>`;
         if (tx.account === 'commerce') {
           const nextSubtype = (tx.subtype === 'monnaie') ? 'especes' : 'monnaie';
           const label = (tx.subtype === 'monnaie') ? '💵 → Espèces' : '🪙 → Monnaie';
@@ -402,6 +418,42 @@
           </td>`;
         tbody.appendChild(tr);
       });
+    }
+
+    function showEditModal(id) {
+      const tx = allData.transactions.find(t => t.id === id);
+      if (!tx) return;
+      const overlay = document.createElement('div');
+      overlay.className = 'ecart-overlay';
+      overlay.id = 'edit-overlay';
+      overlay.innerHTML = `
+        <div class="edit-modal">
+          <h3>✏️ Modifier l'opération</h3>
+          <div class="edit-field"><label>Montant (€)</label><input type="number" id="edit-amount" step="0.01" min="0.01" inputmode="decimal" value="${tx.amount}"></div>
+          <div class="edit-field"><label>Date</label><input type="date" id="edit-date" value="${tx.date}"></div>
+          <div class="edit-field"><label>N° de bordereau</label><input type="text" id="edit-note" inputmode="numeric" value="${tx.note || ''}"></div>
+          <div class="edit-modal-btns">
+            <button class="btn btn-confirm-edit" onclick="confirmEdit('${id}')">Enregistrer</button>
+            <button class="btn btn-cancel-edit" onclick="document.getElementById('edit-overlay').remove()">Annuler</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      document.getElementById('edit-amount').focus();
+    }
+
+    async function confirmEdit(id) {
+      const tx = allData.transactions.find(t => t.id === id);
+      if (!tx) return;
+      const amount = parseFloat(document.getElementById('edit-amount').value);
+      const date   = document.getElementById('edit-date').value;
+      const note   = document.getElementById('edit-note').value.trim();
+      if (!amount || amount <= 0) return;
+      tx.amount = amount;
+      tx.date   = date;
+      tx.note   = note;
+      document.getElementById('edit-overlay').remove();
+      await saveData(allData);
+      render();
     }
 
     async function toggleSubtype(id, subtype) {
