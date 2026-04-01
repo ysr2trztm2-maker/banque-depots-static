@@ -357,7 +357,7 @@
         } else if (s === 'ecart') {
           const diff = tx.ecart_amount != null ? tx.ecart_amount : null;
           const diffStr = diff != null
-            ? `<div class="ecart-detail">Relevé : ${fmt(tx.releve_amount)} &nbsp;|&nbsp; Diff : ${diff >= 0 ? '+' : ''}${fmt(diff)}</div>`
+            ? `<div class="ecart-detail">Relevé : ${fmt(tx.releve_amount)} &nbsp;|&nbsp; Diff : ${diff > 0 ? '+' : ''}${fmt(diff)}</div>`
             : '';
           statusHtml = `<span class="status-ecart">⚠️ Écart</span>${diffStr}`;
         } else {
@@ -434,13 +434,13 @@
       const val = parseFloat(document.getElementById('releve-input').value);
       const div = document.getElementById('ecart-diff-preview');
       if (isNaN(val)) { div.textContent = ''; div.className = 'ecart-diff'; return; }
-      const diff = depositAmount - val;
+      const diff = val - depositAmount;
       if (diff === 0) {
         div.className = 'ecart-diff zero';
         div.textContent = 'Aucun écart (montants identiques)';
       } else {
-        div.className = 'ecart-diff ' + (diff > 0 ? 'neg' : 'pos');
-        div.textContent = `Écart : ${diff > 0 ? '+' : ''}${fmt(diff)} (dépôt ${diff > 0 ? 'supérieur' : 'inférieur'} au relevé)`;
+        div.className = 'ecart-diff ' + (diff < 0 ? 'neg' : 'pos');
+        div.textContent = `Écart : ${diff > 0 ? '+' : ''}${fmt(diff)} (il manque ${fmt(Math.abs(diff))} sur le relevé)`;
       }
     }
 
@@ -452,7 +452,7 @@
       tx.status = 'ecart';
       tx.verified = false;
       tx.releve_amount = releve;
-      tx.ecart_amount = depositAmount - releve;
+      tx.ecart_amount = releve - depositAmount;
       document.getElementById('ecart-overlay').remove();
       await saveData(allData);
       render();
