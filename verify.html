@@ -37,6 +37,7 @@
     .total-label { font-size: 0.9rem; font-weight: 700; color: #4a5568; margin-bottom: 6px; }
     .total-amount { font-size: 1.6rem; font-weight: 800; color: #1a202c; }
     .total-sublabel { font-size: 0.75rem; color: #a0aec0; margin-top: 4px; }
+    .total-ecart { font-size: 0.78rem; font-weight: 700; color: #b45309; margin-top: 6px; }
 
     /* Filtres */
     .filters-card { background: white; border-radius: 10px; padding: 16px 20px; margin-bottom: 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.06); }
@@ -174,10 +175,10 @@
 
   <div class="container">
     <div class="totals-grid">
-      <div class="total-card total-commerce"><div class="total-label">🛒 Commerce</div><div class="total-amount" id="tot-commerce">—</div><div class="total-sublabel">total déposé</div></div>
-      <div class="total-card total-tabac"><div class="total-label">🚬 Tabac</div><div class="total-amount" id="tot-tabac">—</div><div class="total-sublabel">total déposé</div></div>
-      <div class="total-card total-pmu"><div class="total-label">🐴 PMU</div><div class="total-amount" id="tot-pmu">—</div><div class="total-sublabel">total déposé</div></div>
-      <div class="total-card total-retrait"><div class="total-label">💵 Retraits</div><div class="total-amount" id="tot-retrait">—</div><div class="total-sublabel">total retiré</div></div>
+      <div class="total-card total-commerce"><div class="total-label">🛒 Commerce</div><div class="total-amount" id="tot-commerce">—</div><div class="total-sublabel">non vérifié</div><div class="total-ecart" id="ecart-commerce" style="display:none"></div></div>
+      <div class="total-card total-tabac"><div class="total-label">🚬 Tabac</div><div class="total-amount" id="tot-tabac">—</div><div class="total-sublabel">non vérifié</div><div class="total-ecart" id="ecart-tabac" style="display:none"></div></div>
+      <div class="total-card total-pmu"><div class="total-label">🐴 PMU</div><div class="total-amount" id="tot-pmu">—</div><div class="total-sublabel">non vérifié</div><div class="total-ecart" id="ecart-pmu" style="display:none"></div></div>
+      <div class="total-card total-retrait"><div class="total-label">💵 Retraits</div><div class="total-amount" id="tot-retrait">—</div><div class="total-sublabel">non vérifié</div><div class="total-ecart" id="ecart-retrait" style="display:none"></div></div>
     </div>
 
     <div class="alerts-card">
@@ -331,12 +332,32 @@
       if (fFrom) base = base.filter(t => t.date >= fFrom);
       if (fTo)   base = base.filter(t => t.date <= fTo);
 
+      // Totaux non-vérifiés + écarts cumulés par compte (toujours sur toutes les données, sans filtre)
+      const all = allData.transactions;
       ['commerce','tabac','pmu'].forEach(acc => {
-        const total = base.filter(t => t.type === 'depot' && t.account === acc).reduce((s,t) => s + t.amount, 0);
-        document.getElementById('tot-' + acc).textContent = fmt(total);
+        const pending = all.filter(t => t.type === 'depot' && t.account === acc && getStatus(t) === 'pending').reduce((s,t) => s + t.amount, 0);
+        document.getElementById('tot-' + acc).textContent = fmt(pending);
+        const ecartSum = all.filter(t => t.type === 'depot' && t.account === acc && getStatus(t) === 'ecart' && t.ecart_amount != null).reduce((s,t) => s + t.ecart_amount, 0);
+        const ecartEl = document.getElementById('ecart-' + acc);
+        const ecartCount = all.filter(t => t.type === 'depot' && t.account === acc && getStatus(t) === 'ecart').length;
+        if (ecartCount > 0) {
+          ecartEl.textContent = `⚠️ écart cumulé : ${ecartSum > 0 ? '+' : ''}${fmt(ecartSum)} (${ecartCount})`;
+          ecartEl.style.display = 'block';
+        } else {
+          ecartEl.style.display = 'none';
+        }
       });
-      const totalR = base.filter(t => t.type === 'retrait').reduce((s,t) => s + t.amount, 0);
-      document.getElementById('tot-retrait').textContent = fmt(totalR);
+      const pendingR = all.filter(t => t.type === 'retrait' && getStatus(t) === 'pending').reduce((s,t) => s + t.amount, 0);
+      document.getElementById('tot-retrait').textContent = fmt(pendingR);
+      const ecartR = all.filter(t => t.type === 'retrait' && getStatus(t) === 'ecart' && t.ecart_amount != null).reduce((s,t) => s + t.ecart_amount, 0);
+      const ecartRCount = all.filter(t => t.type === 'retrait' && getStatus(t) === 'ecart').length;
+      const ecartRetEl = document.getElementById('ecart-retrait');
+      if (ecartRCount > 0) {
+        ecartRetEl.textContent = `⚠️ écart cumulé : ${ecartR > 0 ? '+' : ''}${fmt(ecartR)} (${ecartRCount})`;
+        ecartRetEl.style.display = 'block';
+      } else {
+        ecartRetEl.style.display = 'none';
+      }
 
       // Alertes
       const pendingFacture     = allData.transactions.filter(t => t.type === 'depot'   && getStatus(t) === 'pending').length;
