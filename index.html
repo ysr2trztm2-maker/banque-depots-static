@@ -52,6 +52,12 @@
     .btn-tabac    { background: #e53e3e; color: white; }
     .btn-pmu      { background: #38a169; color: white; }
     .btn-retrait  { background: #dd6b20; color: white; }
+
+    /* Toggle type versement */
+    .toggle-group { display: grid; grid-template-columns: 1fr 1fr; border-radius: 8px; overflow: hidden; border: 2px solid #3182ce; }
+    .toggle-btn { padding: 10px 8px; border: none; cursor: pointer; font-size: 0.88rem; font-weight: 700; background: white; color: #3182ce; transition: background 0.15s, color 0.15s; }
+    .toggle-btn.active { background: #3182ce; color: white; }
+    .toggle-btn:not(.active):hover { background: #ebf8ff; }
   </style>
 </head>
 <body>
@@ -82,6 +88,13 @@
     <!-- Commerce -->
     <div class="panel panel-commerce" id="panel-commerce">
       <div class="panel-title"><span>🛒</span> Dépôt Commerce</div>
+      <div class="form-group">
+        <label>Type de versement</label>
+        <div class="toggle-group">
+          <button class="toggle-btn active" id="toggle-especes" onclick="setVersement('especes')">💵 Espèces</button>
+          <button class="toggle-btn" id="toggle-monnaie" onclick="setVersement('monnaie')">🪙 Monnaie</button>
+        </div>
+      </div>
       <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-commerce" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
       <div class="form-group"><label>Date</label><input type="date" id="date-commerce"></div>
       <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-commerce" placeholder="ex: 000123" inputmode="numeric"></div>
@@ -124,6 +137,13 @@
     function apiUrl() { return `https://api.github.com/gists/${GIST_ID}`; }
 
     const today = new Date().toISOString().slice(0,10);
+    let versementType = 'especes';
+
+    function setVersement(type) {
+      versementType = type;
+      document.getElementById('toggle-especes').classList.toggle('active', type === 'especes');
+      document.getElementById('toggle-monnaie').classList.toggle('active', type === 'monnaie');
+    }
 
     window.addEventListener('DOMContentLoaded', () => {
       ['commerce','tabac','pmu','retrait'].forEach(k => {
@@ -184,7 +204,7 @@
 
       try {
         const data = await loadData();
-        data.transactions.push({
+        const tx = {
           id: Date.now().toString(),
           type,
           account,
@@ -193,7 +213,9 @@
           note: noteEl.value.trim(),
           verified: false,
           verified_at: null
-        });
+        };
+        if (account === 'commerce') tx.subtype = versementType;
+        data.transactions.push(tx);
         await saveData(data);
 
         const label = account === 'commerce' ? 'Commerce' : account === 'tabac' ? 'Tabac' : account === 'pmu' ? 'PMU' : null;
@@ -201,6 +223,7 @@
         amtEl.value = '';
         noteEl.value = '';
         dateEl.value = today;
+        if (account === 'commerce') setVersement('especes');
       } catch(e) {
         showAlert('❌ Erreur de sauvegarde. Réessayez.', 'error');
       }
