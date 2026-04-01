@@ -58,6 +58,25 @@
     .btn-repending:hover { background: #edf2f7; }
     .btn-delete   { background: #fed7d7; color: #c53030; padding: 5px 9px; font-size: 0.8rem; }
 
+    /* Modale Écart */
+    .ecart-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.55); z-index: 200; display: flex; align-items: center; justify-content: center; }
+    .ecart-modal { background: white; border-radius: 14px; padding: 28px 24px; max-width: 360px; width: 92%; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
+    .ecart-modal h3 { font-size: 1.05rem; margin-bottom: 6px; color: #2d3748; }
+    .ecart-modal .ecart-info { font-size: 0.88rem; color: #718096; margin-bottom: 18px; }
+    .ecart-modal .ecart-info strong { color: #2d3748; }
+    .ecart-modal label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #718096; display: block; margin-bottom: 5px; }
+    .ecart-modal input { border: 1.5px solid #e2e8f0; border-radius: 7px; padding: 9px 12px; font-size: 1.4rem; font-weight: 700; width: 100%; margin-bottom: 8px; }
+    .ecart-modal input:focus { outline: none; border-color: #d97706; box-shadow: 0 0 0 3px rgba(217,119,6,0.15); }
+    .ecart-diff { font-size: 0.9rem; font-weight: 700; padding: 8px 12px; border-radius: 7px; margin-bottom: 18px; text-align: center; min-height: 36px; }
+    .ecart-diff.neg { background: #fff5f5; color: #c53030; }
+    .ecart-diff.pos { background: #f0fff4; color: #276749; }
+    .ecart-diff.zero { background: #f0fff4; color: #276749; }
+    .ecart-modal-btns { display: flex; gap: 10px; }
+    .ecart-modal-btns .btn { flex: 1; padding: 11px; font-size: 0.9rem; }
+    .btn-confirm-ecart { background: #d97706; color: white; }
+    .btn-cancel-ecart  { background: #e2e8f0; color: #4a5568; }
+    .ecart-detail { font-size: 0.72rem; color: #b45309; margin-top: 2px; }
+
     /* Tableau */
     .table-wrapper { background: white; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); overflow: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 0.88rem; }
@@ -336,7 +355,11 @@
         if (s === 'verified') {
           statusHtml = `<span class="status-verified">✅ Vérifié</span>${tx.verified_at ? `<div class="verified-date">${fmtDate(tx.verified_at.slice(0,10))}</div>` : ''}`;
         } else if (s === 'ecart') {
-          statusHtml = `<span class="status-ecart">⚠️ Écart</span>`;
+          const diff = tx.ecart_amount != null ? tx.ecart_amount : null;
+          const diffStr = diff != null
+            ? `<div class="ecart-detail">Relevé : ${fmt(tx.releve_amount)} &nbsp;|&nbsp; Diff : ${diff >= 0 ? '+' : ''}${fmt(diff)}</div>`
+            : '';
+          statusHtml = `<span class="status-ecart">⚠️ Écart</span>${diffStr}`;
         } else {
           statusHtml = `<span class="status-pending">⏳ En attente</span>`;
         }
@@ -344,12 +367,13 @@
         let actionsHtml;
         if (s === 'pending') {
           actionsHtml = `<button class="btn btn-verify" onclick="setStatus('${tx.id}','verified')">✓ Vérifier</button>
-                         <button class="btn btn-ecart" onclick="setStatus('${tx.id}','ecart')">⚠ Écart</button>`;
+                         <button class="btn btn-ecart" onclick="showEcartModal('${tx.id}')">⚠ Écart</button>`;
         } else if (s === 'verified') {
-          actionsHtml = `<button class="btn btn-ecart" onclick="setStatus('${tx.id}','ecart')">⚠ Écart</button>
+          actionsHtml = `<button class="btn btn-ecart" onclick="showEcartModal('${tx.id}')">⚠ Écart</button>
                          <button class="btn btn-repending" onclick="setStatus('${tx.id}','pending')">↩ Annuler</button>`;
         } else {
           actionsHtml = `<button class="btn btn-verify" onclick="setStatus('${tx.id}','verified')">✓ Vérifier</button>
+                         <button class="btn btn-ecart" onclick="showEcartModal('${tx.id}')">✏️ Modifier</button>
                          <button class="btn btn-repending" onclick="setStatus('${tx.id}','pending')">↩ Attente</button>`;
         }
 
@@ -374,6 +398,62 @@
       tx.status = status;
       tx.verified = (status === 'verified');
       if (status === 'verified') tx.verified_at = new Date().toISOString();
+      if (status === 'pending') { tx.releve_amount = null; tx.ecart_amount = null; }
+      await saveData(allData);
+      render();
+    }
+
+    function showEcartModal(id) {
+      const tx = allData.transactions.find(t => t.id === id);
+      if (!tx) return;
+      const existing = tx.releve_amount != null ? tx.releve_amount : '';
+
+      const overlay = document.createElement('div');
+      overlay.className = 'ecart-overlay';
+      overlay.id = 'ecart-overlay';
+      overlay.innerHTML = `
+        <div class="ecart-modal">
+          <h3>⚠️ Saisir l'écart</h3>
+          <div class="ecart-info">Montant déposé : <strong>${fmt(tx.amount)}</strong></div>
+          <label>Montant sur le relevé (€)</label>
+          <input type="number" id="releve-input" step="0.01" inputmode="decimal" placeholder="0,00" value="${existing}" oninput="updateDiffPreview(${tx.amount})">
+          <div class="ecart-diff" id="ecart-diff-preview"></div>
+          <div class="ecart-modal-btns">
+            <button class="btn btn-confirm-ecart" onclick="confirmEcart('${id}', ${tx.amount})">Confirmer</button>
+            <button class="btn btn-cancel-ecart" onclick="document.getElementById('ecart-overlay').remove()">Annuler</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+
+      const input = document.getElementById('releve-input');
+      input.focus();
+      if (existing !== '') updateDiffPreview(tx.amount);
+    }
+
+    function updateDiffPreview(depositAmount) {
+      const val = parseFloat(document.getElementById('releve-input').value);
+      const div = document.getElementById('ecart-diff-preview');
+      if (isNaN(val)) { div.textContent = ''; div.className = 'ecart-diff'; return; }
+      const diff = depositAmount - val;
+      if (diff === 0) {
+        div.className = 'ecart-diff zero';
+        div.textContent = 'Aucun écart (montants identiques)';
+      } else {
+        div.className = 'ecart-diff ' + (diff > 0 ? 'neg' : 'pos');
+        div.textContent = `Écart : ${diff > 0 ? '+' : ''}${fmt(diff)} (dépôt ${diff > 0 ? 'supérieur' : 'inférieur'} au relevé)`;
+      }
+    }
+
+    async function confirmEcart(id, depositAmount) {
+      const releve = parseFloat(document.getElementById('releve-input').value);
+      if (isNaN(releve) || releve < 0) return;
+      const tx = allData.transactions.find(t => t.id === id);
+      if (!tx) return;
+      tx.status = 'ecart';
+      tx.verified = false;
+      tx.releve_amount = releve;
+      tx.ecart_amount = depositAmount - releve;
+      document.getElementById('ecart-overlay').remove();
       await saveData(allData);
       render();
     }
