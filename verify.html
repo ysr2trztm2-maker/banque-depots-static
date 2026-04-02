@@ -487,7 +487,7 @@
             row.innerHTML = `
               <span class="ov-date">${fmtDate(tx.date)}</span>
               <span class="ov-account ${accClass(tx.account)}">${ovLabel(tx)}</span>
-              <span class="ov-amount ${tx.type}">${tx.type === 'retrait' ? 'R ' : '+'}${fmt(tx.amount)}</span>
+              <span class="ov-amount ${tx.type}">${tx.type === 'retrait' ? '💰 ' : '+'}${fmt(tx.amount)}</span>
               <span class="ov-status ov-${s}">${statusLabel}</span>
               ${ecartStr}`;
             overviewWrapper.appendChild(row);
