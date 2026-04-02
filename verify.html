@@ -463,7 +463,7 @@
           const ovLabel = tx => {
             if (tx.account === 'tabac') return '🚬 Tabac';
             if (tx.account === 'pmu')   return '🐴 PMU';
-            return tx.subtype === 'monnaie' ? '🛒 🪙' : '🛒 Commerce';
+            return tx.subtype === 'monnaie' ? '🛒 Commerce 🪙' : '🛒 Commerce';
           };
           const accClass = a => ({'tabac':'ov-acc-tabac','pmu':'ov-acc-pmu'}[a] || 'ov-acc-commerce');
           let lastMonth = '';
