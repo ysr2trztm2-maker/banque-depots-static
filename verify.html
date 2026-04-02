@@ -329,16 +329,23 @@
     function fmt(n) { return n.toFixed(2) + '€'; }
     function fmtDate(d) { if (!d) return ''; const [y,m,j] = d.split('-'); return `${j}-${m}-${y.slice(2)}`; }
 
-    function accountLabel(acc, subtype) {
-      if (acc === 'commerce') {
-        const sub = subtype === 'monnaie'
-          ? '<span style="font-size:0.72rem;background:#fefcbf;color:#744210;border:1px solid #f6e05e;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">🪙 Monnaie</span>'
-          : '<span style="font-size:0.72rem;background:#e9f5ff;color:#2b6cb0;border:1px solid #bee3f8;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">💵 Espèces</span>';
-        return '🛒 Commerce' + sub;
+    function isCommerce(tx) {
+      return tx.account === 'commerce' || tx.account == null || tx.account === 'retrait';
+    }
+
+    function accountLabel(tx) {
+      if (tx.account === 'tabac') return '🚬 Tabac';
+      if (tx.account === 'pmu')   return '🐴 PMU';
+      // Commerce (dépôts + retraits)
+      if (tx.type === 'retrait' || isCommerce(tx)) {
+        if (tx.type === 'depot' && tx.subtype) {
+          const sub = tx.subtype === 'monnaie'
+            ? '<span style="font-size:0.72rem;background:#fefcbf;color:#744210;border:1px solid #f6e05e;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">🪙 Monnaie</span>'
+            : '<span style="font-size:0.72rem;background:#e9f5ff;color:#2b6cb0;border:1px solid #bee3f8;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">💵 Espèces</span>';
+          return '🛒 Commerce' + sub;
+        }
+        return '🛒 Commerce';
       }
-      if (acc === 'tabac')                  return '🚬 Tabac';
-      if (acc === 'pmu')                    return '🐴 PMU';
-      if (acc === 'retrait' || acc == null) return '🛒 Commerce';
       return '—';
     }
 
@@ -356,8 +363,9 @@
       let txs = allData.transactions.slice();
 
       // Filtres
-      if (fAccount === 'retrait') txs = txs.filter(t => t.type === 'retrait');
-      else if (fAccount)          txs = txs.filter(t => t.account === fAccount);
+      if (fAccount === 'retrait')   txs = txs.filter(t => t.type === 'retrait');
+      else if (fAccount === 'commerce') txs = txs.filter(t => isCommerce(t));
+      else if (fAccount)            txs = txs.filter(t => t.account === fAccount);
       if (fStatus === 'pending')  txs = txs.filter(t => getStatus(t) === 'pending');
       if (fStatus === 'verified') txs = txs.filter(t => getStatus(t) === 'verified');
       if (fStatus === 'ecart')    txs = txs.filter(t => getStatus(t) === 'ecart');
@@ -441,8 +449,8 @@
         if (!txs.length) {
           overviewWrapper.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:32px">Aucune opération trouvée.</div>';
         } else {
-          const accLabel = a => ({'commerce':'🛒 Commerce','tabac':'🚬 Tabac','pmu':'🐴 PMU'}[a] || '🛒 Commerce');
-          const accClass = a => ({'commerce':'ov-acc-commerce','tabac':'ov-acc-tabac','pmu':'ov-acc-pmu'}[a] || 'ov-acc-commerce');
+          const ovLabel = tx => accountLabel(tx).replace(/<[^>]+>/g,'');
+          const accClass = a => ({'tabac':'ov-acc-tabac','pmu':'ov-acc-pmu'}[a] || 'ov-acc-commerce');
           let lastMonth = '';
           txs.forEach(tx => {
             const s = getStatus(tx);
@@ -463,7 +471,7 @@
             const statusLabel = s === 'verified' ? '✅ Vérifié' : s === 'ecart' ? '⚠️ Écart' : '⏳ Attente';
             row.innerHTML = `
               <span class="ov-date">${fmtDate(tx.date)}</span>
-              <span class="ov-account ${accClass(tx.account)}">${accLabel(tx.account)}</span>
+              <span class="ov-account ${accClass(tx.account)}">${ovLabel(tx)}</span>
               <span class="ov-amount ${tx.type}">${tx.type === 'retrait' ? '−' : '+'}${fmt(tx.amount)}</span>
               <span class="ov-status ov-${s}">${statusLabel}</span>
               ${ecartStr}`;
@@ -513,7 +521,7 @@
         tr.innerHTML = `
           <td data-label="Date" style="color:#4a5568;white-space:nowrap">${fmtDate(tx.date)}</td>
           <td data-label="Type"><span class="badge badge-${tx.type}">${tx.type === 'depot' ? 'Dépôt' : 'Retrait'}</span></td>
-          <td data-label="Compte">${accountLabel(tx.account, tx.subtype)}</td>
+          <td data-label="Compte">${accountLabel(tx)}</td>
           <td data-label="Montant" class="amount-${tx.type} td-amount" style="white-space:nowrap">${amountStr}</td>
           <td data-label="Bordereau" class="col-bordereau" style="color:#718096;font-style:italic">${tx.note || '—'}</td>
           <td data-label="Statut">${statusHtml}</td>
