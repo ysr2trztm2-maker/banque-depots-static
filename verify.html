@@ -79,6 +79,33 @@
     .toggle-btn { padding: 10px 8px; border: none; cursor: pointer; font-size: 0.88rem; font-weight: 700; background: white; transition: background 0.15s, color 0.15s; }
     .toggle-btn.active { background: #805ad5; color: white; }
 
+    /* Toggle vue tableau / visuelle */
+    .view-switcher { display: flex; gap: 8px; margin-bottom: 14px; }
+    .view-btn { padding: 8px 16px; border-radius: 8px; border: 2px solid #e2e8f0; background: white; color: #718096; font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; }
+    .view-btn.active { background: #1a202c; color: white; border-color: #1a202c; }
+
+    /* Vue visuelle */
+    .overview-wrapper { display: flex; flex-direction: column; gap: 5px; }
+    .ov-month { font-size: 0.72rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; color: #a0aec0; margin-top: 14px; margin-bottom: 4px; padding-left: 4px; }
+    .ov-row { display: flex; align-items: center; gap: 12px; padding: 9px 14px; border-radius: 8px; border-left: 5px solid transparent; cursor: default; }
+    .ov-row.ov-verified { background: #f0fff4; border-left-color: #38a169; }
+    .ov-row.ov-pending  { background: #f7fafc; border-left-color: #a0aec0; }
+    .ov-row.ov-ecart    { background: #fffaf0; border-left-color: #dd6b20; }
+    .ov-date    { font-size: 0.82rem; color: #718096; min-width: 72px; font-weight: 600; }
+    .ov-account { font-size: 0.78rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+    .ov-acc-commerce { background: #ebf8ff; color: #2b6cb0; }
+    .ov-acc-tabac    { background: #fff5f5; color: #c53030; }
+    .ov-acc-pmu      { background: #f0fff4; color: #276749; }
+    .ov-acc-retrait  { background: #fffaf0; color: #c05621; }
+    .ov-amount  { font-size: 0.95rem; font-weight: 800; margin-left: auto; white-space: nowrap; }
+    .ov-amount.depot   { color: #276749; }
+    .ov-amount.retrait { color: #c53030; }
+    .ov-status  { font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+    .ov-status.ov-verified { background: #c6f6d5; color: #276749; }
+    .ov-status.ov-pending  { background: #e2e8f0; color: #718096; }
+    .ov-status.ov-ecart    { background: #feebc8; color: #c05621; }
+    .ov-ecart-detail { font-size: 0.72rem; color: #b45309; margin-left: 4px; }
+
     /* Modale Écart */
     .ecart-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.55); z-index: 200; display: flex; align-items: center; justify-content: center; }
     .ecart-modal { background: white; border-radius: 14px; padding: 28px 24px; max-width: 360px; width: 92%; box-shadow: 0 8px 32px rgba(0,0,0,0.2); }
@@ -219,6 +246,11 @@
       </div>
     </div>
 
+    <div class="view-switcher">
+      <button class="view-btn active" id="btn-vue-tableau" onclick="switchView('tableau')">☰ Tableau</button>
+      <button class="view-btn" id="btn-vue-visuelle" onclick="switchView('visuelle')">◉ Vue d'ensemble</button>
+    </div>
+
     <div id="loading">Chargement…</div>
     <div class="table-wrapper" id="table-wrapper" style="display:none">
       <table>
@@ -227,6 +259,8 @@
       </table>
       <div id="empty-state" class="empty-state" style="display:none">Aucune opération trouvée.</div>
     </div>
+
+    <div class="overview-wrapper" id="overview-wrapper" style="display:none"></div>
   </div>
 
   <script>
@@ -237,7 +271,7 @@
     function apiUrl() { return `https://api.github.com/gists/${GIST_ID}`; }
 
     window.addEventListener('DOMContentLoaded', () => {
-      loadData().then(data => { allData = data; document.getElementById('loading').style.display='none'; document.getElementById('table-wrapper').style.display='block'; render(); }).catch(() => showConfig());
+      loadData().then(data => { allData = data; document.getElementById('loading').style.display='none'; render(); }).catch(() => showConfig());
     });
 
     function showConfig() {
@@ -258,10 +292,18 @@
       if (!t) return;
       localStorage.setItem('banque_token', t);
       document.getElementById('config-overlay').remove();
-      loadData().then(data => { allData = data; document.getElementById('loading').style.display='none'; document.getElementById('table-wrapper').style.display='block'; render(); });
+      loadData().then(data => { allData = data; document.getElementById('loading').style.display='none'; render(); });
     }
 
     let allData = { transactions: [] };
+    let currentView = 'tableau';
+
+    function switchView(v) {
+      currentView = v;
+      document.getElementById('btn-vue-tableau').classList.toggle('active', v === 'tableau');
+      document.getElementById('btn-vue-visuelle').classList.toggle('active', v === 'visuelle');
+      render();
+    }
 
     async function loadData() {
       const r = await fetch(apiUrl(), { headers: { 'Authorization': 'token ' + getToken() } });
@@ -385,6 +427,49 @@
                pendingVerif,      'opération(s) à vérifier sur le relevé', 'Toutes les opérations sont vérifiées');
       setAlert('alert-ecart',       'alert-prelevement', '✅', '⚠️', 'Écarts à re-vérifier',
                countEcart,        'opération(s) avec écart détecté', 'Aucun écart détecté');
+
+      // Choix de la vue
+      const tableWrapper   = document.getElementById('table-wrapper');
+      const overviewWrapper = document.getElementById('overview-wrapper');
+      tableWrapper.style.display   = currentView === 'tableau'   ? 'block' : 'none';
+      overviewWrapper.style.display = currentView === 'visuelle' ? 'flex'  : 'none';
+
+      // Vue d'ensemble visuelle
+      if (currentView === 'visuelle') {
+        overviewWrapper.innerHTML = '';
+        if (!txs.length) {
+          overviewWrapper.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:32px">Aucune opération trouvée.</div>';
+        } else {
+          const accLabel = { commerce: '🛒 Commerce', tabac: '🚬 Tabac', pmu: '🐴 PMU', retrait: '💵 Retrait' };
+          const accClass = { commerce: 'ov-acc-commerce', tabac: 'ov-acc-tabac', pmu: 'ov-acc-pmu', retrait: 'ov-acc-retrait' };
+          let lastMonth = '';
+          txs.forEach(tx => {
+            const s = getStatus(tx);
+            const month = tx.date.slice(0, 7);
+            if (month !== lastMonth) {
+              lastMonth = month;
+              const [y, m] = month.split('-');
+              const label = new Date(y, m-1).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+              const sep = document.createElement('div');
+              sep.className = 'ov-month';
+              sep.textContent = label;
+              overviewWrapper.appendChild(sep);
+            }
+            const row = document.createElement('div');
+            row.className = `ov-row ov-${s}`;
+            const ecartStr = s === 'ecart' && tx.ecart_amount != null
+              ? `<span class="ov-ecart-detail">(${tx.ecart_amount > 0 ? '+' : ''}${fmt(tx.ecart_amount)})</span>` : '';
+            const statusLabel = s === 'verified' ? '✅ Vérifié' : s === 'ecart' ? '⚠️ Écart' : '⏳ Attente';
+            row.innerHTML = `
+              <span class="ov-date">${fmtDate(tx.date)}</span>
+              <span class="ov-account ${accClass[tx.account] || ''}">${accLabel[tx.account] || tx.account}</span>
+              <span class="ov-amount ${tx.type}">${tx.type === 'retrait' ? '−' : '+'}${fmt(tx.amount)}</span>
+              <span class="ov-status ov-${s}">${statusLabel}</span>
+              ${ecartStr}`;
+            overviewWrapper.appendChild(row);
+          });
+        }
+      }
 
       // Tableau
       const tbody = document.getElementById('tbody');
@@ -585,7 +670,6 @@
     loadData().then(data => {
       allData = data;
       document.getElementById('loading').style.display = 'none';
-      document.getElementById('table-wrapper').style.display = 'block';
       render();
     });
   </script>
