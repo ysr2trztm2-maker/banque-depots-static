@@ -460,7 +460,11 @@
         if (!txs.length) {
           overviewWrapper.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:32px">Aucune opération trouvée.</div>';
         } else {
-          const ovLabel = tx => accountLabel(tx).replace(/<[^>]+>/g,'');
+          const ovLabel = tx => {
+            if (tx.account === 'tabac') return '🚬 Tabac';
+            if (tx.account === 'pmu')   return '🐴 PMU';
+            return tx.subtype === 'monnaie' ? '🛒 🪙' : '🛒 Commerce';
+          };
           const accClass = a => ({'tabac':'ov-acc-tabac','pmu':'ov-acc-pmu'}[a] || 'ov-acc-commerce');
           let lastMonth = '';
           txs.forEach(tx => {
@@ -483,7 +487,7 @@
             row.innerHTML = `
               <span class="ov-date">${fmtDate(tx.date)}</span>
               <span class="ov-account ${accClass(tx.account)}">${ovLabel(tx)}</span>
-              <span class="ov-amount ${tx.type}">${tx.type === 'retrait' ? '−' : '+'}${fmt(tx.amount)}</span>
+              <span class="ov-amount ${tx.type}">${tx.type === 'retrait' ? 'R ' : '+'}${fmt(tx.amount)}</span>
               <span class="ov-status ov-${s}">${statusLabel}</span>
               ${ecartStr}`;
             overviewWrapper.appendChild(row);
