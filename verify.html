@@ -336,8 +336,9 @@
           : '<span style="font-size:0.72rem;background:#e9f5ff;color:#2b6cb0;border:1px solid #bee3f8;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">💵 Espèces</span>';
         return '🛒 Commerce' + sub;
       }
-      if (acc === 'tabac') return '🚬 Tabac';
-      if (acc === 'pmu')   return '🐴 PMU';
+      if (acc === 'tabac')   return '🚬 Tabac';
+      if (acc === 'pmu')     return '🐴 PMU';
+      if (acc === 'retrait') return '🛒 Commerce';
       return '—';
     }
 
@@ -440,8 +441,8 @@
         if (!txs.length) {
           overviewWrapper.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:32px">Aucune opération trouvée.</div>';
         } else {
-          const accLabel = { commerce: '🛒 Commerce', tabac: '🚬 Tabac', pmu: '🐴 PMU', retrait: '💵 Retrait' };
-          const accClass = { commerce: 'ov-acc-commerce', tabac: 'ov-acc-tabac', pmu: 'ov-acc-pmu', retrait: 'ov-acc-retrait' };
+          const accLabel = { commerce: '🛒 Commerce', tabac: '🚬 Tabac', pmu: '🐴 PMU', retrait: '🛒 Commerce' };
+          const accClass = { commerce: 'ov-acc-commerce', tabac: 'ov-acc-tabac', pmu: 'ov-acc-pmu', retrait: 'ov-acc-commerce' };
           let lastMonth = '';
           txs.forEach(tx => {
             const s = getStatus(tx);
