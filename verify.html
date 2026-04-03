@@ -622,6 +622,16 @@
       tx.verified = (status === 'verified');
       if (status === 'verified') tx.verified_at = new Date().toISOString();
       if (status === 'pending') { tx.releve_amount = null; tx.ecart_amount = null; }
+      // Si virement tabac : synchronise automatiquement la transaction liée
+      if (tx.subtype === 'virement_tabac' && tx.linked_id) {
+        const linked = allData.transactions.find(t => t.linked_id === tx.linked_id && t.id !== tx.id);
+        if (linked) {
+          linked.status = status;
+          linked.verified = (status === 'verified');
+          if (status === 'verified') linked.verified_at = new Date().toISOString();
+          if (status === 'pending') { linked.releve_amount = null; linked.ecart_amount = null; }
+        }
+      }
       await saveData(allData);
       render();
     }
