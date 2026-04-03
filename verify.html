@@ -31,9 +31,12 @@
 
     /* Totaux */
     .totals-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
-    .total-card { background: white; border-radius: 10px; padding: 18px 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); text-align: center; border-top: 4px solid transparent; }
+    .total-card { background: white; border-radius: 10px; padding: 18px 20px; box-shadow: 0 2px 6px rgba(0,0,0,0.07); text-align: center; border-top: 4px solid transparent; transition: background 0.2s, border-top-color 0.2s; }
     .total-commerce { border-top-color: #3182ce; } .total-tabac { border-top-color: #e53e3e; }
     .total-pmu { border-top-color: #38a169; } .total-retrait { border-top-color: #dd6b20; }
+    .total-card.alerte { background: #fff5f5; border-top-color: #e53e3e !important; }
+    .total-card.alerte .total-label { color: #c53030; }
+    .total-card.alerte .total-amount { color: #c53030; }
     .total-label { font-size: 0.9rem; font-weight: 700; color: #4a5568; margin-bottom: 6px; }
     .total-amount { font-size: 1.6rem; font-weight: 800; color: #1a202c; }
     .total-sublabel { font-size: 0.75rem; color: #a0aec0; margin-top: 4px; }
@@ -403,6 +406,7 @@
       ['commerce','tabac','pmu'].forEach(acc => {
         const pending = all.filter(t => t.type === 'depot' && t.account === acc && getStatus(t) === 'pending').reduce((s,t) => s + t.amount, 0);
         document.getElementById('tot-' + acc).textContent = fmt(pending);
+        document.querySelector('.total-' + acc).classList.toggle('alerte', pending > 0);
         const ecartSum = all.filter(t => t.type === 'depot' && t.account === acc && getStatus(t) === 'ecart' && t.ecart_amount != null).reduce((s,t) => s + t.ecart_amount, 0);
         const ecartEl = document.getElementById('ecart-' + acc);
         const ecartCount = all.filter(t => t.type === 'depot' && t.account === acc && getStatus(t) === 'ecart').length;
@@ -415,6 +419,7 @@
       });
       const pendingR = all.filter(t => t.type === 'retrait' && t.subtype !== 'virement_tabac' && getStatus(t) === 'pending').reduce((s,t) => s + t.amount, 0);
       document.getElementById('tot-retrait').textContent = fmt(pendingR);
+      document.querySelector('.total-retrait').classList.toggle('alerte', pendingR > 0);
       const ecartR = all.filter(t => t.type === 'retrait' && t.subtype !== 'virement_tabac' && getStatus(t) === 'ecart' && t.ecart_amount != null).reduce((s,t) => s + t.ecart_amount, 0);
       const ecartRCount = all.filter(t => t.type === 'retrait' && t.subtype !== 'virement_tabac' && getStatus(t) === 'ecart').length;
       const ecartRetEl = document.getElementById('ecart-retrait');
