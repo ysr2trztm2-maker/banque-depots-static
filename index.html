@@ -234,7 +234,7 @@
     }
 
     async function save(type, account) {
-      const key = account || 'retrait';
+      const key = type === 'retrait' ? 'retrait' : (account || type);
       const amtEl  = document.getElementById('amt-' + key);
       const dateEl = document.getElementById('date-' + key);
       const noteEl = document.getElementById('note-' + key);
