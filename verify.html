@@ -374,10 +374,11 @@
       const fFrom    = document.getElementById('f-from').value;
       const fTo      = document.getElementById('f-to').value;
 
-      let txs = allData.transactions.slice();
+      // Masquer la ligne Commerce des virements (on garde seulement Tabac)
+      let txs = allData.transactions.filter(t => !(t.subtype === 'virement_tabac' && t.account === 'commerce'));
 
       // Filtres
-      if (fAccount === 'retrait')   txs = txs.filter(t => t.type === 'retrait');
+      if (fAccount === 'retrait')   txs = txs.filter(t => t.type === 'retrait' && t.subtype !== 'virement_tabac');
       else if (fAccount === 'commerce') txs = txs.filter(t => isCommerce(t));
       else if (fAccount)            txs = txs.filter(t => t.account === fAccount);
       if (fStatus === 'pending')  txs = txs.filter(t => getStatus(t) === 'pending');
@@ -412,10 +413,10 @@
           ecartEl.style.display = 'none';
         }
       });
-      const pendingR = all.filter(t => t.type === 'retrait' && getStatus(t) === 'pending').reduce((s,t) => s + t.amount, 0);
+      const pendingR = all.filter(t => t.type === 'retrait' && t.subtype !== 'virement_tabac' && getStatus(t) === 'pending').reduce((s,t) => s + t.amount, 0);
       document.getElementById('tot-retrait').textContent = fmt(pendingR);
-      const ecartR = all.filter(t => t.type === 'retrait' && getStatus(t) === 'ecart' && t.ecart_amount != null).reduce((s,t) => s + t.ecart_amount, 0);
-      const ecartRCount = all.filter(t => t.type === 'retrait' && getStatus(t) === 'ecart').length;
+      const ecartR = all.filter(t => t.type === 'retrait' && t.subtype !== 'virement_tabac' && getStatus(t) === 'ecart' && t.ecart_amount != null).reduce((s,t) => s + t.ecart_amount, 0);
+      const ecartRCount = all.filter(t => t.type === 'retrait' && t.subtype !== 'virement_tabac' && getStatus(t) === 'ecart').length;
       const ecartRetEl = document.getElementById('ecart-retrait');
       if (ecartRCount > 0) {
         ecartRetEl.textContent = `⚠️ écart cumulé : ${ecartR > 0 ? '+' : ''}${fmt(ecartR)} (${ecartRCount})`;
