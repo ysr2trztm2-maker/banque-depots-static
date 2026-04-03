@@ -259,8 +259,8 @@
     </div>
 
     <div class="view-switcher">
-      <button class="view-btn active" id="btn-vue-tableau" onclick="switchView('tableau')">☰ Tableau</button>
-      <button class="view-btn" id="btn-vue-visuelle" onclick="switchView('visuelle')">◉ Vue d'ensemble</button>
+      <button class="view-btn" id="btn-vue-tableau" onclick="switchView('tableau')">☰ Tableau</button>
+      <button class="view-btn active" id="btn-vue-visuelle" onclick="switchView('visuelle')">◉ Vue d'ensemble</button>
     </div>
 
     <div id="loading">Chargement…</div>
@@ -308,7 +308,7 @@
     }
 
     let allData = { transactions: [] };
-    let currentView = 'tableau';
+    let currentView = 'visuelle';
 
     function switchView(v) {
       currentView = v;
