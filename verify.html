@@ -426,10 +426,11 @@
       }
 
       // Alertes
-      const pendingFacture     = allData.transactions.filter(t => t.type === 'depot'   && getStatus(t) === 'pending').length;
-      const pendingPrelevement = allData.transactions.filter(t => t.type === 'retrait' && getStatus(t) === 'pending').length;
+      const isHidden = t => t.type === 'retrait' && t.subtype === 'virement_tabac';
+      const pendingFacture     = allData.transactions.filter(t => t.type === 'depot'                && getStatus(t) === 'pending').length;
+      const pendingPrelevement = allData.transactions.filter(t => t.type === 'retrait' && !isHidden(t) && getStatus(t) === 'pending').length;
       const pendingVerif       = pendingFacture + pendingPrelevement;
-      const countEcart         = allData.transactions.filter(t => getStatus(t) === 'ecart').length;
+      const countEcart         = allData.transactions.filter(t => !isHidden(t) && getStatus(t) === 'ecart').length;
 
       function setAlert(id, cssClass, iconOk, iconWarn, label, count, msgWarn, msgOk) {
         const el = document.getElementById(id);
