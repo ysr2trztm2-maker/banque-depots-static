@@ -134,8 +134,9 @@
     .row-verified { background: #f0fff4; } .row-pending { background: white; } .row-ecart { background: #fffbeb; }
     .row-verified:hover { background: #e6ffed; } .row-pending:hover { background: #f7fafc; } .row-ecart:hover { background: #fef3c7; }
     .badge { padding: 3px 9px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; }
-    .badge-depot   { background: #bee3f8; color: #2b6cb0; }
-    .badge-retrait { background: #fed7d7; color: #c53030; }
+    .badge-depot    { background: #bee3f8; color: #2b6cb0; }
+    .badge-retrait  { background: #fed7d7; color: #c53030; }
+    .badge-virement { background: #e9d8fd; color: #553c9a; }
     .amount-depot   { color: #276749; font-weight: 700; }
     .amount-retrait { color: #c53030; font-weight: 700; }
     .status-verified { color: #276749; font-weight: 600; font-size: 0.85rem; }
@@ -345,16 +346,18 @@
     }
 
     function accountLabel(tx) {
+      if (tx.subtype === 'virement_tabac') {
+        return tx.account === 'tabac'
+          ? '🚬 Tabac <span style="font-size:0.72rem;background:#e9d8fd;color:#553c9a;border:1px solid #d6bcfa;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">↔ virement</span>'
+          : '🛒 Commerce <span style="font-size:0.72rem;background:#e9d8fd;color:#553c9a;border:1px solid #d6bcfa;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">↔ virement</span>';
+      }
       if (tx.account === 'tabac') return '🚬 Tabac';
       if (tx.account === 'pmu')   return '🐴 PMU';
-      // Commerce (dépôts + retraits)
       if (tx.type === 'retrait' || isCommerce(tx)) {
-        if (tx.type === 'depot' && tx.subtype) {
-          const sub = tx.subtype === 'monnaie'
-            ? '<span style="font-size:0.72rem;background:#fefcbf;color:#744210;border:1px solid #f6e05e;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">🪙 Monnaie</span>'
-            : '<span style="font-size:0.72rem;background:#e9f5ff;color:#2b6cb0;border:1px solid #bee3f8;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">💵 Espèces</span>';
-          return '🛒 Commerce' + sub;
-        }
+        if (tx.type === 'depot' && tx.subtype === 'monnaie')
+          return '🛒 Commerce <span style="font-size:0.72rem;background:#fefcbf;color:#744210;border:1px solid #f6e05e;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">🪙 Monnaie</span>';
+        if (tx.type === 'depot' && tx.subtype === 'especes')
+          return '🛒 Commerce <span style="font-size:0.72rem;background:#e9f5ff;color:#2b6cb0;border:1px solid #bee3f8;border-radius:10px;padding:1px 6px;margin-left:4px;font-weight:700">💵 Espèces</span>';
         return '🛒 Commerce';
       }
       return '—';
@@ -461,6 +464,8 @@
           overviewWrapper.innerHTML = '<div style="text-align:center;color:#a0aec0;padding:32px">Aucune opération trouvée.</div>';
         } else {
           const ovLabel = tx => {
+            if (tx.subtype === 'virement_tabac')
+              return tx.account === 'tabac' ? '🚬 Tabac ↔' : '🛒 Commerce ↔';
             if (tx.account === 'tabac') return '🚬 Tabac';
             if (tx.account === 'pmu')   return '🐴 PMU';
             return tx.subtype === 'monnaie' ? '🛒 Commerce 🪙' : '🛒 Commerce';
@@ -535,7 +540,7 @@
 
         tr.innerHTML = `
           <td data-label="Date" style="color:#4a5568;white-space:nowrap">${fmtDate(tx.date)}</td>
-          <td data-label="Type"><span class="badge badge-${tx.type}">${tx.type === 'depot' ? 'Dépôt' : 'Retrait'}</span></td>
+          <td data-label="Type"><span class="badge badge-${tx.subtype === 'virement_tabac' ? 'virement' : tx.type}">${tx.subtype === 'virement_tabac' ? '↔ Virement' : tx.type === 'depot' ? 'Dépôt' : 'Retrait'}</span></td>
           <td data-label="Compte">${accountLabel(tx)}</td>
           <td data-label="Montant" class="amount-${tx.type} td-amount" style="white-space:nowrap">${amountStr}</td>
           <td data-label="Bordereau" class="col-bordereau" style="color:#718096;font-style:italic">${tx.note || '—'}</td>

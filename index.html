@@ -54,7 +54,7 @@
     .btn-retrait  { background: #dd6b20; color: white; }
 
     /* Toggle type versement */
-    .toggle-group { display: grid; grid-template-columns: 1fr 1fr; border-radius: 8px; overflow: hidden; border: 2px solid #63b3ed; }
+    .toggle-group { display: grid; grid-template-columns: 1fr 1fr 1fr; border-radius: 8px; overflow: hidden; border: 2px solid #63b3ed; }
     .toggle-btn { padding: 10px 8px; border: none; cursor: pointer; font-size: 0.88rem; font-weight: 700; background: white; color: #63b3ed; transition: background 0.15s, color 0.15s; }
     .toggle-btn.active { background: #63b3ed; color: white; }
     .toggle-btn:not(.active):hover { background: #ebf8ff; }
@@ -93,12 +93,13 @@
         <div class="toggle-group">
           <button class="toggle-btn active" id="toggle-especes" onclick="setVersement('especes')">💵 Espèces</button>
           <button class="toggle-btn" id="toggle-monnaie" onclick="setVersement('monnaie')">🪙 Monnaie</button>
+          <button class="toggle-btn" id="toggle-virement_tabac" onclick="setVersement('virement_tabac')">↔ Tabac</button>
         </div>
       </div>
       <div class="form-group"><label>Montant (€)</label><input type="number" id="amt-commerce" step="0.01" min="0.01" placeholder="0,00" inputmode="decimal"></div>
       <div class="form-group"><label>Date</label><input type="date" id="date-commerce"></div>
       <div class="form-group"><label>N° de bordereau</label><input type="text" id="note-commerce" placeholder="ex: 000123" inputmode="numeric"></div>
-      <button class="btn btn-commerce" onclick="save('depot','commerce')">Enregistrer le dépôt</button>
+      <button class="btn btn-commerce" id="btn-save-commerce" onclick="saveCommerce()">Enregistrer le dépôt</button>
     </div>
 
     <!-- Tabac -->
@@ -141,8 +142,51 @@
 
     function setVersement(type) {
       versementType = type;
-      document.getElementById('toggle-especes').classList.toggle('active', type === 'especes');
-      document.getElementById('toggle-monnaie').classList.toggle('active', type === 'monnaie');
+      ['especes','monnaie','virement_tabac'].forEach(t =>
+        document.getElementById('toggle-' + t).classList.toggle('active', t === type)
+      );
+      const btn = document.getElementById('btn-save-commerce');
+      btn.textContent = type === 'virement_tabac' ? 'Enregistrer le virement' : 'Enregistrer le dépôt';
+    }
+
+    async function saveCommerce() {
+      const amtEl  = document.getElementById('amt-commerce');
+      const dateEl = document.getElementById('date-commerce');
+      const noteEl = document.getElementById('note-commerce');
+      const amount = parseFloat(amtEl.value);
+      if (!amount || amount <= 0) { showAlert('Veuillez saisir un montant valide.', 'error'); return; }
+
+      const btn = document.getElementById('btn-save-commerce');
+      btn.disabled = true;
+      btn.textContent = 'Enregistrement…';
+
+      try {
+        const data = await loadData();
+        const base = { date: dateEl.value || today, note: noteEl.value.trim(), verified: false, verified_at: null };
+
+        if (versementType === 'virement_tabac') {
+          const lid = Date.now().toString();
+          // Sortie Commerce (négatif)
+          data.transactions.push({ ...base, id: lid + '_c', type: 'retrait', account: 'commerce', subtype: 'virement_tabac', amount, linked_id: lid });
+          // Entrée Tabac (positif)
+          data.transactions.push({ ...base, id: lid + '_t', type: 'depot',   account: 'tabac',    subtype: 'virement_tabac', amount, linked_id: lid });
+          showAlert('✅ Virement Commerce → Tabac enregistré', 'success');
+        } else {
+          data.transactions.push({ ...base, id: Date.now().toString(), type: 'depot', account: 'commerce', subtype: versementType, amount });
+          showAlert('✅ Dépôt enregistré — Commerce', 'success');
+        }
+
+        await saveData(data);
+        amtEl.value = '';
+        noteEl.value = '';
+        dateEl.value = today;
+        setVersement('especes');
+      } catch(e) {
+        showAlert('❌ Erreur de sauvegarde. Réessayez.', 'error');
+      }
+
+      btn.disabled = false;
+      btn.textContent = 'Enregistrer le dépôt';
     }
 
     window.addEventListener('DOMContentLoaded', () => {
